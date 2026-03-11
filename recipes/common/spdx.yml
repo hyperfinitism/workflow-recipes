@@ -1,0 +1,50 @@
+name: SPDX License Check
+
+on:
+  pull_request:
+    paths:
+      - "path/to/code/**"
+      - ".github/workflows/spdx.yml"
+  push:
+    paths:
+      - "path/to/code/**"
+      - ".github/workflows/spdx.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spdx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+      - uses: enarx/spdx@d4020ee98e3101dd487c5184f27c6a6fb4f88709 # master
+        with:
+          licenses: [ Apache-2.0, MIT ]
+
+# enarx/spdx does exact string matching against the SPDX-License-Identifier header in each source file.
+# It does NOT parse SPDX license expressions semantically.
+#
+# List Form
+# licenses: [ A, B, ... ]
+# Each element is matched independently.
+# This accepts files whose header is exactly "A" or exactly "B", or ..., but not "A OR B OR ...".
+#
+# Expression Form
+# licenses: A OR B OR ...
+# The entire string is matched as-is.
+# This accepts files whose header is exactly "A OR B OR ...", but NOT "A" alone nor "B" alone, nor ...
+#
+# If your project mixes both styles in source files, list all variants:
+# licenses: |-
+#   A
+#   B
+#   A OR B
+#
+# https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/
