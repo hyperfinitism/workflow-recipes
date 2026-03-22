@@ -29,17 +29,22 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
-          - "1.90" # MSRV
+          - "1.90.0" # MSRV
           - stable
+        os-arch:
+          - ubuntu-24.04-x86_64
+          - ubuntu-24.04-aarch64
         include:
-          - runner: ubuntu-24.04
+          - os-arch: ubuntu-24.04-x86_64
+            runner: ubuntu-24.04
             target: x86_64-unknown-linux-gnu
-          - runner: ubuntu-24.04-arm
+          - os-arch: ubuntu-24.04-aarch64
+            runner: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
     steps:
-        - uses: actions/checkout@v6
-        - uses: actions-rust-lang/setup-rust-toolchain@v1
-          with:
-            toolchain: ${{ matrix.toolchain }}
-            target: ${{ matrix.target }}
-        - run: cargo build --workspace --all-targets --all-features --target ${{ matrix.target }}
+      - uses: actions/checkout@v6
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
+      - run: cargo build --workspace --all-targets --all-features --target ${{ matrix.target }}
