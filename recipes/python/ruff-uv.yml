@@ -4,15 +4,17 @@ on:
   pull_request:
     paths:
       - "pyproject.toml"
+      - "uv.lock"
       - "src/**"
       - "tests/**"
-      - ".github/workflows/ruff.yml"
+      - ".github/workflows/ruff-uv.yml"
   push:
     paths:
       - "pyproject.toml"
+      - "uv.lock"
       - "src/**"
       - "tests/**"
-      - ".github/workflows/ruff.yml"
+      - ".github/workflows/ruff-uv.yml"
   workflow_dispatch:
 
 permissions:
@@ -27,14 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v8
         with:
           python-version: "3.14"
-          cache: "pip"
-      - run: |
-          python -m pip install --upgrade pip
-          pip install ruff
       - name: Lint (ruff check)
-        run: ruff check
+        run: uv run --frozen ruff check
       - name: Format (ruff format --check)
-        run: ruff format --check
+        run: uv run --frozen ruff format --check
