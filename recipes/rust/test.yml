@@ -1,18 +1,20 @@
-name: Build
+name: Test
 
 on:
-  pull_request:
-    paths:
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/build.yml'
   push:
     paths:
       - 'src/**'
+      - 'tests/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
-      - '.github/workflows/build.yml'
+      - '.github/workflows/test.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/test.yml'
   workflow_dispatch:
 
 permissions:
@@ -22,8 +24,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
-  build:
+  test:
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -52,10 +57,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-      - name: Setup Rust toolchain  
+      - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.toolchain }}
           target: ${{ matrix.target }}
-      - name: Build
-        run: cargo build --workspace --all-targets --all-features --target ${{ matrix.target }}
+      - name: Test
+        run: cargo test --all-targets

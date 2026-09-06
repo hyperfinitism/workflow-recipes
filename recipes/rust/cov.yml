@@ -1,0 +1,59 @@
+name: Coverage
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/cov.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/cov.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Generate HTML coverage report
+        run: cargo llvm-cov --html
+      - name: Generate LCOV coverage report
+        run: cargo llvm-cov report --lcov --output-path target/llvm-cov/lcov.info
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: llvm-cov-html
+          path: target/llvm-cov/html
+          if-no-files-found: error
+      - name: Upload LCOV coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: llvm-cov-lcov
+          path: target/llvm-cov/lcov.info
+          if-no-files-found: error
